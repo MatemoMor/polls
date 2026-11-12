@@ -1,0 +1,375 @@
+{
+  "info": {
+    "name": "Polls Platform - сценарий защиты",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "pollUrl",
+      "value": "http://localhost:8001"
+    },
+    {
+      "key": "voteUrl",
+      "value": "http://localhost:8002"
+    },
+    {
+      "key": "resultsUrl",
+      "value": "http://localhost:8003"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Создать опрос с 3 вариантами",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('201 Created', () => pm.response.to.have.status(201));",
+              "const j = pm.response.json();",
+              "pm.test('3 варианта, опрос активен', () => { pm.expect(j.options.length).to.eql(3); pm.expect(j.is_active).to.eql(true); });",
+              "pm.collectionVariables.set('pollId', j.id);",
+              "pm.collectionVariables.set('optionA', j.options[0].id);",
+              "pm.collectionVariables.set('optionB', j.options[1].id);",
+              "pm.collectionVariables.set('optionC', j.options[2].id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{pollUrl}}/api/polls"
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"title\": \"Любимый язык программирования\", \"options\": [\"Java\", \"Python\", \"Go\"]}"
+        }
+      }
+    },
+    {
+      "name": "2. Создать второй опрос (для проверки чужого варианта)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('201 Created', () => pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('otherOption', pm.response.json().options[0].id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{pollUrl}}/api/polls"
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"title\": \"Другой опрос\", \"options\": [\"Да\", \"Нет\"]}"
+        }
+      }
+    },
+    {
+      "name": "3.1 Голос voter-1 за Java -> 201",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('201', () => pm.response.to.have.status(201));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"poll_id\": \"{{pollId}}\", \"option_id\": \"{{optionA}}\", \"voter_id\": \"voter-1\"}"
+        },
+        "url": {
+          "raw": "{{voteUrl}}/api/votes"
+        }
+      }
+    },
+    {
+      "name": "3.2 Голос voter-2 за Java -> 201",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('201', () => pm.response.to.have.status(201));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"poll_id\": \"{{pollId}}\", \"option_id\": \"{{optionA}}\", \"voter_id\": \"voter-2\"}"
+        },
+        "url": {
+          "raw": "{{voteUrl}}/api/votes"
+        }
+      }
+    },
+    {
+      "name": "3.3 Голос voter-3 за Python -> 201",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('201', () => pm.response.to.have.status(201));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"poll_id\": \"{{pollId}}\", \"option_id\": \"{{optionB}}\", \"voter_id\": \"voter-3\"}"
+        },
+        "url": {
+          "raw": "{{voteUrl}}/api/votes"
+        }
+      }
+    },
+    {
+      "name": "3.4 Голос voter-4 за Go -> 201",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('201', () => pm.response.to.have.status(201));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"poll_id\": \"{{pollId}}\", \"option_id\": \"{{optionC}}\", \"voter_id\": \"voter-4\"}"
+        },
+        "url": {
+          "raw": "{{voteUrl}}/api/votes"
+        }
+      }
+    },
+    {
+      "name": "3.5 Голос voter-5 за Java -> 201",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('201', () => pm.response.to.have.status(201));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"poll_id\": \"{{pollId}}\", \"option_id\": \"{{optionA}}\", \"voter_id\": \"voter-5\"}"
+        },
+        "url": {
+          "raw": "{{voteUrl}}/api/votes"
+        }
+      }
+    },
+    {
+      "name": "4. Повторный голос voter-1 -> 409",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('409', () => pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"poll_id\": \"{{pollId}}\", \"option_id\": \"{{optionB}}\", \"voter_id\": \"voter-1\"}"
+        },
+        "url": {
+          "raw": "{{voteUrl}}/api/votes"
+        }
+      }
+    },
+    {
+      "name": "5. Голос за вариант из другого опроса -> 422",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('422', () => pm.response.to.have.status(422));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"poll_id\": \"{{pollId}}\", \"option_id\": \"{{otherOption}}\", \"voter_id\": \"voter-99\"}"
+        },
+        "url": {
+          "raw": "{{voteUrl}}/api/votes"
+        }
+      }
+    },
+    {
+      "name": "6. Результаты в процентах (Java 60.0, Python 20.0, Go 20.0)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 OK', () => pm.response.to.have.status(200));",
+              "const j = pm.response.json();",
+              "pm.test('5 голосов', () => pm.expect(j.total_votes).to.eql(5));",
+              "pm.test('проценты', () => { pm.expect(j.results[0].percent).to.eql(60); pm.expect(j.results[1].percent).to.eql(20); pm.expect(j.results[2].percent).to.eql(20); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{resultsUrl}}/api/results/{{pollId}}"
+        }
+      }
+    },
+    {
+      "name": "7. Закрыть опрос",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 OK', () => pm.response.to.have.status(200));",
+              "pm.test('опрос закрыт', () => { const j = pm.response.json(); pm.expect(j.status).to.eql('closed'); pm.expect(j.is_active).to.eql(false); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{pollUrl}}/api/polls/{{pollId}}/close"
+        }
+      }
+    },
+    {
+      "name": "8. Голос в закрытый опрос -> 422",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('422', () => pm.response.to.have.status(422));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"poll_id\": \"{{pollId}}\", \"option_id\": \"{{optionA}}\", \"voter_id\": \"voter-100\"}"
+        },
+        "url": {
+          "raw": "{{voteUrl}}/api/votes"
+        }
+      }
+    }
+  ]
+}

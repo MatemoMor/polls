@@ -1,0 +1,31 @@
+server:
+  port: 8001
+
+spring:
+  application:
+    name: poll-service
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/polls?currentSchema=poll}
+    username: ${DB_USER:poll}
+    password: ${DB_PASSWORD:poll_pass}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        default_schema: poll
+  flyway:
+    enabled: true
+    schemas: poll
+    default-schema: poll
+    locations: classpath:db/migration
+  jackson:
+    property-naming-strategy: SNAKE_CASE
+
+management:
+  endpoints:
+    web:
+      base-path: /
+      exposure:
+        include: health

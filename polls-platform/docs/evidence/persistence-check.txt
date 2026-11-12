@@ -1,0 +1,1 @@
+(файл создаётся скриптом scripts/collect-evidence.sh)

@@ -1,0 +1,22 @@
+server:
+  port: 8003
+
+spring:
+  application:
+    name: results-service
+  jackson:
+    property-naming-strategy: SNAKE_CASE
+
+management:
+  endpoints:
+    web:
+      base-path: /
+      exposure:
+        include: health
+
+app:
+  poll-service-url: ${POLL_SERVICE_URL:http://localhost:8001}
+  vote-service-url: ${VOTE_SERVICE_URL:http://localhost:8002}
+  http:
+    connect-timeout-ms: ${HTTP_CONNECT_TIMEOUT_MS:3000}
+    read-timeout-ms: ${HTTP_READ_TIMEOUT_MS:3000}
