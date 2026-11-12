@@ -29,18 +29,6 @@
 
 Сервисы общаются только по HTTP и не обращаются к таблицам друг друга. Poll и Vote работают под разными пользователями БД (`poll`, `vote`), у каждого права только на свою схему.
 
-## Архитектура
-
-Схема C4 (3 уровня: Context, Container, Component): [`docs/architecture.drawio`](docs/architecture.drawio), картинка: [`docs/architecture.png`](docs/architecture.png).
-
-Как экспортировать PNG:
-1. Откройте `docs/architecture.drawio` в [app.diagrams.net](https://app.diagrams.net) или в draw.io Desktop.
-2. Выберите нужную страницу (`1. Context`, `2. Container`, `3. Component`).
-3. `File → Export as → PNG…`, масштаб 100–200 %, галка *Border width*, нажмите *Export*.
-4. Сохраните как `docs/architecture.png`. Для остальных уровней сохраните `architecture-context.png` и `architecture-component.png` рядом.
-
-CLI-вариант (draw.io Desktop): `drawio -x -f png --all-pages -o docs docs/architecture.drawio`.
-
 ## Как запустить
 
 Нужны Docker и Docker Compose.
@@ -115,38 +103,3 @@ curl -s -X POST localhost:8001/api/polls/<POLL_ID>/close
             {"option_id":"…","text":"Python","count":1,"percent":20.0},
             {"option_id":"…","text":"Go","count":1,"percent":20.0}]}
 ```
-
-## Проверка
-
-### Пошаговый сценарий
-
-Импортируйте `postman/polls.postman_collection.json` и запустите Collection Runner (или выполните `./scripts/collect-evidence.sh`, он делает то же самое curl-ом):
-
-1. Создать опрос с 3 вариантами → 201.
-2. Отправить 5 голосов от `voter-1…voter-5` → 201.
-3. Повторный голос `voter-1` → **409**.
-4. Голос за вариант из другого опроса → **422**.
-5. Получить результаты: Java 60.0 %, Python 20.0 %, Go 20.0 %.
-6. Закрыть опрос и проголосовать ещё раз → **422**.
-
-### Сохранность данных
-
-```bash
-curl -s localhost:8003/api/results/<POLL_ID>   # запомнить цифры
-docker compose restart
-curl -s localhost:8003/api/results/<POLL_ID>   # цифры те же
-```
-
-Данные также переживают `docker compose down` и последующий `docker compose up` (без `-v`), потому что лежат в именованном томе `db_data`.
-
-### Доказательства
-
-Скрипт `scripts/collect-evidence.sh` сохраняет вывод в [`docs/evidence`](docs/evidence/README.md):
-[`compose-up.txt`](docs/evidence/compose-up.txt), [`compose-ps.txt`](docs/evidence/compose-ps.txt),
-[`api-check.txt`](docs/evidence/api-check.txt), [`persistence-check.txt`](docs/evidence/persistence-check.txt).
-
-## ⚠️ Предупреждение
-
-`docker compose down -v` **удаляет том `db_data`, то есть все опросы и голоса**. После этого `db/init.sql` выполнится заново на пустой базе. Для обычной остановки используйте `docker compose down` без `-v`.
-
-Скрипт `db/init.sql` выполняется только при первой инициализации тома. Если меняете пароли ролей, пересоздайте том и обновите значения в `.env`.
