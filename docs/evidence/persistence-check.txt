@@ -1,0 +1,18 @@
+== Результаты ДО docker compose restart ==
+$ curl -X GET http://localhost:8003/api/results/4e55b0d5-f2d1-4f40-80d8-61ca4c54741f
+{"poll_id":"4e55b0d5-f2d1-4f40-80d8-61ca4c54741f","title":"Любимый язык программирования","total_votes":5,"results":[{"option_id":"0de70da7-1c94-435b-b979-13a6993e9c31","text":"Java","count":3,"percent":60.0},{"option_id":"08e342f7-a3f6-4572-9a6a-e9cf9c15c49b","text":"Python","count":1,"percent":20.0},{"option_id":"05ee8cb6-598f-4a4c-8253-a4b0cd5806a3","text":"Go","count":1,"percent":20.0}],"is_active":false}
+HTTP 200
+== docker compose restart ==
+ Container polls-platform-poll-service-1 Restarting 
+ Container polls-platform-results-service-1 Restarting 
+ Container polls-platform-vote-service-1 Restarting 
+ Container polls-platform-db-1 Restarting 
+ Container polls-platform-results-service-1 Started 
+ Container polls-platform-db-1 Started 
+ Container polls-platform-vote-service-1 Started 
+ Container polls-platform-poll-service-1 Started 
+== Результаты ПОСЛЕ docker compose restart ==
+$ curl -X GET http://localhost:8003/api/results/4e55b0d5-f2d1-4f40-80d8-61ca4c54741f
+{"poll_id":"4e55b0d5-f2d1-4f40-80d8-61ca4c54741f","title":"Любимый язык программирования","total_votes":5,"results":[{"option_id":"0de70da7-1c94-435b-b979-13a6993e9c31","text":"Java","count":3,"percent":60.0},{"option_id":"08e342f7-a3f6-4572-9a6a-e9cf9c15c49b","text":"Python","count":1,"percent":20.0},{"option_id":"05ee8cb6-598f-4a4c-8253-a4b0cd5806a3","text":"Go","count":1,"percent":20.0}],"is_active":false}
+HTTP 200
+== ИТОГ: результаты идентичны, данные сохранились ==

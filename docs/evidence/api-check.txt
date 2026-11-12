@@ -1,0 +1,54 @@
+$ curl -X POST http://localhost:8001/api/polls -d '{"title":"Любимый язык программирования","options":["Java","Python","Go"]}'
+{"id":"4e55b0d5-f2d1-4f40-80d8-61ca4c54741f","title":"Любимый язык программирования","status":"active","ends_at":null,"created_at":"2026-11-12T06:58:19.492895885Z","options":[{"id":"0de70da7-1c94-435b-b979-13a6993e9c31","text":"Java","position":1},{"id":"08e342f7-a3f6-4572-9a6a-e9cf9c15c49b","text":"Python","position":2},{"id":"05ee8cb6-598f-4a4c-8253-a4b0cd5806a3","text":"Go","position":3}],"is_active":true}
+HTTP 201
+
+$ curl -X POST http://localhost:8001/api/polls -d '{"title":"Другой опрос","options":["Да","Нет"]}'
+{"id":"bc83d86c-8226-4e08-8e67-ef28fdc529e2","title":"Другой опрос","status":"active","ends_at":null,"created_at":"2026-11-12T06:58:19.693112442Z","options":[{"id":"3b119f52-d3fa-4e49-b38a-1dcb857570da","text":"Да","position":1},{"id":"0701b964-dec7-41e2-a636-7f79f778f75d","text":"Нет","position":2}],"is_active":true}
+HTTP 201
+
+## 5 голосов от разных voter_id (ожидается 201)
+$ curl -X POST http://localhost:8002/api/votes -d '{"poll_id":"4e55b0d5-f2d1-4f40-80d8-61ca4c54741f","option_id":"0de70da7-1c94-435b-b979-13a6993e9c31","voter_id":"voter-1"}'
+{"id":"9003f702-04fa-4865-9ba3-e9b84468fc9e","poll_id":"4e55b0d5-f2d1-4f40-80d8-61ca4c54741f","option_id":"0de70da7-1c94-435b-b979-13a6993e9c31","voter_id":"voter-1","created_at":"2026-11-12T06:58:20.388695935Z"}
+HTTP 201
+
+$ curl -X POST http://localhost:8002/api/votes -d '{"poll_id":"4e55b0d5-f2d1-4f40-80d8-61ca4c54741f","option_id":"0de70da7-1c94-435b-b979-13a6993e9c31","voter_id":"voter-2"}'
+{"id":"31f5c099-dfa7-4b80-a48a-51d1cb439ac6","poll_id":"4e55b0d5-f2d1-4f40-80d8-61ca4c54741f","option_id":"0de70da7-1c94-435b-b979-13a6993e9c31","voter_id":"voter-2","created_at":"2026-11-12T06:58:20.60336084Z"}
+HTTP 201
+
+$ curl -X POST http://localhost:8002/api/votes -d '{"poll_id":"4e55b0d5-f2d1-4f40-80d8-61ca4c54741f","option_id":"08e342f7-a3f6-4572-9a6a-e9cf9c15c49b","voter_id":"voter-3"}'
+{"id":"2be5138d-6b2a-4873-be10-228b90705881","poll_id":"4e55b0d5-f2d1-4f40-80d8-61ca4c54741f","option_id":"08e342f7-a3f6-4572-9a6a-e9cf9c15c49b","voter_id":"voter-3","created_at":"2026-11-12T06:58:20.667923042Z"}
+HTTP 201
+
+$ curl -X POST http://localhost:8002/api/votes -d '{"poll_id":"4e55b0d5-f2d1-4f40-80d8-61ca4c54741f","option_id":"05ee8cb6-598f-4a4c-8253-a4b0cd5806a3","voter_id":"voter-4"}'
+{"id":"79697b3c-f51b-48d2-85ea-338cd90534d8","poll_id":"4e55b0d5-f2d1-4f40-80d8-61ca4c54741f","option_id":"05ee8cb6-598f-4a4c-8253-a4b0cd5806a3","voter_id":"voter-4","created_at":"2026-11-12T06:58:20.735389755Z"}
+HTTP 201
+
+$ curl -X POST http://localhost:8002/api/votes -d '{"poll_id":"4e55b0d5-f2d1-4f40-80d8-61ca4c54741f","option_id":"0de70da7-1c94-435b-b979-13a6993e9c31","voter_id":"voter-5"}'
+{"id":"dbbd2d91-78d9-43ea-a717-e54fb618f99d","poll_id":"4e55b0d5-f2d1-4f40-80d8-61ca4c54741f","option_id":"0de70da7-1c94-435b-b979-13a6993e9c31","voter_id":"voter-5","created_at":"2026-11-12T06:58:20.796754682Z"}
+HTTP 201
+
+## Повторный голос voter-1 (ожидается 409)
+$ curl -X POST http://localhost:8002/api/votes -d '{"poll_id":"4e55b0d5-f2d1-4f40-80d8-61ca4c54741f","option_id":"08e342f7-a3f6-4572-9a6a-e9cf9c15c49b","voter_id":"voter-1"}'
+{"detail":"Voter voter-1 has already voted in poll 4e55b0d5-f2d1-4f40-80d8-61ca4c54741f"}
+HTTP 409
+
+## Голос за вариант из другого опроса (ожидается 422)
+$ curl -X POST http://localhost:8002/api/votes -d '{"poll_id":"4e55b0d5-f2d1-4f40-80d8-61ca4c54741f","option_id":"3b119f52-d3fa-4e49-b38a-1dcb857570da","voter_id":"voter-99"}'
+{"detail":"Option 3b119f52-d3fa-4e49-b38a-1dcb857570da does not belong to poll 4e55b0d5-f2d1-4f40-80d8-61ca4c54741f"}
+HTTP 422
+
+## Результаты (ожидается Java 60.0 / Python 20.0 / Go 20.0)
+$ curl -X GET http://localhost:8003/api/results/4e55b0d5-f2d1-4f40-80d8-61ca4c54741f
+{"poll_id":"4e55b0d5-f2d1-4f40-80d8-61ca4c54741f","title":"Любимый язык программирования","total_votes":5,"results":[{"option_id":"0de70da7-1c94-435b-b979-13a6993e9c31","text":"Java","count":3,"percent":60.0},{"option_id":"08e342f7-a3f6-4572-9a6a-e9cf9c15c49b","text":"Python","count":1,"percent":20.0},{"option_id":"05ee8cb6-598f-4a4c-8253-a4b0cd5806a3","text":"Go","count":1,"percent":20.0}],"is_active":true}
+HTTP 200
+
+## Закрытие опроса
+$ curl -X POST http://localhost:8001/api/polls/4e55b0d5-f2d1-4f40-80d8-61ca4c54741f/close
+{"id":"4e55b0d5-f2d1-4f40-80d8-61ca4c54741f","title":"Любимый язык программирования","status":"closed","ends_at":null,"created_at":"2026-11-12T06:58:19.492896Z","options":[{"id":"0de70da7-1c94-435b-b979-13a6993e9c31","text":"Java","position":1},{"id":"08e342f7-a3f6-4572-9a6a-e9cf9c15c49b","text":"Python","position":2},{"id":"05ee8cb6-598f-4a4c-8253-a4b0cd5806a3","text":"Go","position":3}],"is_active":false}
+HTTP 200
+
+## Голос в закрытый опрос (ожидается 422)
+$ curl -X POST http://localhost:8002/api/votes -d '{"poll_id":"4e55b0d5-f2d1-4f40-80d8-61ca4c54741f","option_id":"0de70da7-1c94-435b-b979-13a6993e9c31","voter_id":"voter-100"}'
+{"detail":"Poll 4e55b0d5-f2d1-4f40-80d8-61ca4c54741f is closed"}
+HTTP 422
+

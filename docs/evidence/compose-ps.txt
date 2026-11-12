@@ -1,0 +1,5 @@
+NAME                               IMAGE                                                                     COMMAND                  SERVICE           CREATED         STATUS                   PORTS
+polls-platform-db-1                postgres:16                                                               "docker-entrypoint.s…"   db                5 minutes ago   Up 5 minutes (healthy)   5432/tcp
+polls-platform-poll-service-1      sha256:9bee16f9568ba23ce240ed6ca129f7d35e0d6efcb95c95d62bfce3d9cd124d19   "java -jar app.jar"      poll-service      5 minutes ago   Up 5 minutes (healthy)   0.0.0.0:8001->8001/tcp, [::]:8001->8001/tcp
+polls-platform-results-service-1   sha256:738aabd8c4ffde1da63ab8331c9e042d675e8c2f5f2d9c6513b38437aea5468e   "java -jar app.jar"      results-service   5 minutes ago   Up 4 minutes (healthy)   0.0.0.0:8003->8003/tcp, [::]:8003->8003/tcp
+polls-platform-vote-service-1      sha256:9c5689778c5bd6ce9d8773561849e99e2a5cc11ba37fc54d299276883b1ae334   "java -jar app.jar"      vote-service      5 minutes ago   Up 5 minutes (healthy)   0.0.0.0:8002->8002/tcp, [::]:8002->8002/tcp
